@@ -1,4 +1,5 @@
+/.idea
 /build
 /.aptos
-/framework
+.DS_Store
 Move.toml
