@@ -19,7 +19,8 @@ module edenx::edenx_task {
         on_off: u8,
         total_participants: u64,
         task_type: u8,
-        task_count: u8
+        task_count: u8,
+        basics_award: u8
     }
 
     struct Member has store, key {
@@ -57,6 +58,7 @@ module edenx::edenx_task {
         _task_type: u8,
         _task_code: u64,
         _task_count: u8,
+        _basics_award: u8
     )  acquires TaskList  {
         let publisher = signer::address_of(_signer);
 
@@ -73,7 +75,8 @@ module edenx::edenx_task {
             on_off: 0,
             total_participants: 0,
             task_type: _task_type,
-            task_count: _task_count
+            task_count: _task_count,
+            basics_award: _basics_award
         };
 
         table::upsert(&mut task_list.tasks, _task_id, task);
@@ -83,6 +86,8 @@ module edenx::edenx_task {
         let task_list = borrow_global_mut<TaskList>(@edenx);
 
         if (!table::contains(&task_list.tasks, _task_id)) abort INVALID_ARGUMENT;
+
+        let tasks = table::borrow(&mut task_list.tasks, _task_id);
 
         let addrress = signer::address_of(_signer);
 
@@ -107,10 +112,11 @@ module edenx::edenx_task {
                 is_completed: 1
             };
 
-            let member = borrow_global_mut<Member>(addrress);
-
             table::upsert(&mut member.tasks, _task_id, member_task);
         };
+
+        member.total_task_points = member.total_task_points + ((tasks.basics_award) as u64);
+
     }
 
     public entry fun end_tasks(_signer: &signer, _task_id: u64, _task_code: u64, _correct: u8)  acquires TaskList, Member  {
@@ -153,6 +159,7 @@ module edenx::edenx_task {
         _task_type: u8,
         _task_code: u64,
         _task_count: u8,
+        _basics_award: u8
     ) acquires TaskList {
         let publisher = signer::address_of(_signer);
 
@@ -166,6 +173,7 @@ module edenx::edenx_task {
         task_info.task_points = _task_points;
         task_info.task_type = _task_type;
         task_info.task_count = _task_count;
+        task_info.basics_award = _basics_award;
     }
 
     #[view]
